@@ -86,9 +86,9 @@ class CubeSceneController: ObservableObject {
             cubeRootNode.addChildNode(node)
         }
 
-        // Setup move callback
-        model.onMovePerformed = { [weak self] moveType in
-            self?.animateMove(moveType) {}
+        // Setup move callback - receives pre-computed affected cubies
+        model.onMovePerformed = { [weak self] moveType, affectedCubies in
+            self?.animateMove(moveType, affectedCubies: affectedCubies) {}
         }
 
         // Bind animation state
@@ -113,12 +113,16 @@ class CubeSceneController: ObservableObject {
                     Float(cubie.y) - offset,
                     Float(cubie.z) - offset
                 )
+                // Update node name to match new position (important for gesture detection)
+                node.name = "cubie_\(cubie.x)_\(cubie.y)_\(cubie.z)"
+                // Reset any accumulated rotation on the node
+                node.rotation = SCNVector4(0, 0, 0, 0)
             }
         }
     }
 
-    /// Animates a cube move
-    func animateMove(_ moveType: MoveType, completion: @escaping () -> Void) {
+    /// Animates a cube move with pre-computed affected cubies
+    func animateMove(_ moveType: MoveType, affectedCubies: [Cubie], completion: @escaping () -> Void) {
         guard let cube = cube else {
             completion()
             return
@@ -131,11 +135,12 @@ class CubeSceneController: ObservableObject {
 
         isAnimating = true
 
-        // Get affected cubies (by their CURRENT position before model update)
-        let affectedCubies = cube.getCubiesForMove(moveType)
+        // Use the pre-computed affected cubies (from before position update)
         let affectedNodes = affectedCubies.compactMap { $0.node }
 
         guard !affectedNodes.isEmpty else {
+            // Still apply model update even if no nodes
+            cube.applyMoveToModel(moveType: moveType, affectedCubies: affectedCubies)
             isAnimating = false
             completion()
             return
@@ -175,7 +180,7 @@ class CubeSceneController: ObservableObject {
         // Execute animation
         pivotNode.runAction(rotation) { [weak self] in
             DispatchQueue.main.async {
-                guard let self = self else { return }
+                guard let self = self, let cube = self.cube else { return }
 
                 // Reparent nodes back to cube root
                 for node in affectedNodes {
@@ -190,7 +195,10 @@ class CubeSceneController: ObservableObject {
                 // Remove pivot
                 pivotNode.removeFromParentNode()
 
-                // Rebuild to clean up floating point errors
+                // NOW apply the model update after animation completes
+                cube.applyMoveToModel(moveType: moveType, affectedCubies: affectedCubies)
+
+                // Rebuild to clean up floating point errors and update node positions/names
                 self.rebuildCubeMaterials()
 
                 self.isAnimating = false

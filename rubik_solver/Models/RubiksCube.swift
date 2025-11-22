@@ -23,7 +23,8 @@ class RubiksCube: ObservableObject {
     @Published var isSolved: Bool = true
 
     /// Callback when a move is performed (for animation)
-    var onMovePerformed: ((MoveType) -> Void)?
+    /// Parameters: moveType, affected cubies (before position update)
+    var onMovePerformed: ((MoveType, [Cubie]) -> Void)?
 
     /// Whether animations are currently blocked
     @Published var isAnimating: Bool = false
@@ -59,16 +60,8 @@ class RubiksCube: ObservableObject {
     func performMove(_ moveType: MoveType, animated: Bool = true, recordHistory: Bool = true) {
         guard !isAnimating else { return }
 
-        // Get affected cubies
+        // Get affected cubies BEFORE any changes
         let affectedCubies = getCubiesForMove(moveType)
-
-        // Rotate colors for each affected cubie
-        for cubie in affectedCubies {
-            rotateColors(cubie: cubie, moveType: moveType)
-        }
-
-        // Update positions
-        updatePositions(moveType: moveType, cubies: affectedCubies)
 
         // Record the move
         if recordHistory {
@@ -77,13 +70,27 @@ class RubiksCube: ObservableObject {
             moveCount += 1
         }
 
+        // If animated, trigger animation first, model will be updated after animation
+        if animated {
+            onMovePerformed?(moveType, affectedCubies)
+        } else {
+            // Update model immediately if not animated
+            applyMoveToModel(moveType: moveType, affectedCubies: affectedCubies)
+        }
+    }
+
+    /// Applies the move to the model (colors and positions)
+    func applyMoveToModel(moveType: MoveType, affectedCubies: [Cubie]) {
+        // Rotate colors for each affected cubie
+        for cubie in affectedCubies {
+            rotateColors(cubie: cubie, moveType: moveType)
+        }
+
+        // Update positions
+        updatePositions(moveType: moveType, cubies: affectedCubies)
+
         // Check if solved
         isSolved = checkIfSolved()
-
-        // Trigger animation callback
-        if animated {
-            onMovePerformed?(moveType)
-        }
     }
 
     /// Returns all cubies affected by a move

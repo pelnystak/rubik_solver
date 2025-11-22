@@ -44,7 +44,7 @@ struct ContentView: View {
                 instructionsView
             }
         }
-        .onChange(of: cube.isSolved) { _, newValue in
+        .onChange(of: cube.isSolved) { newValue in
             if newValue && cube.moveCount > 0 {
                 showCongratulations = true
             }

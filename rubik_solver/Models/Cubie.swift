@@ -10,17 +10,17 @@ import SceneKit
 
 /// Represents a single cubie (small cube piece) of the Rubik's Cube
 /// A 3x3x3 cube has 26 visible cubies (excluding the invisible center)
-class Cubie: Identifiable, ObservableObject {
+class Cubie: Identifiable {
     let id: UUID
 
     /// Position in the cube grid (0, 1, or 2 for each axis)
-    @Published var x: Int
-    @Published var y: Int
-    @Published var z: Int
+    var x: Int
+    var y: Int
+    var z: Int
 
     /// Colors for each face (indexed by CubeFace)
     /// Order: up, down, front, back, right, left
-    @Published var colors: [CubeColor]
+    var colors: [CubeColor]
 
     /// Reference to the SceneKit node representing this cubie
     weak var node: SCNNode?

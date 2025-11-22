@@ -2,31 +2,18 @@
 //  rubik_solverApp.swift
 //  rubik_solver
 //
-//  Created by Weronika on 22/11/2025.
+//  Professional 3D Rubik's Cube simulator for iOS
+//  Features: PBR rendering, smooth animations, intuitive gestures
 //
 
 import SwiftUI
-import SwiftData
 
 @main
-struct rubik_solverApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
-        do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-    }()
-
+struct RubiksCubeApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .preferredColorScheme(.dark)
         }
-        .modelContainer(sharedModelContainer)
     }
 }

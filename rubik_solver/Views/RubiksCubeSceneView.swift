@@ -28,6 +28,7 @@ struct RubiksCubeSceneView: UIViewRepresentable {
         // MARK: - GestureHandlerDelegate
 
         func gestureHandler(_ handler: GestureHandler, didRequestMove moveType: MoveType) {
+            guard !parent.sceneController.isAnimating else { return }
             parent.cube.performMove(moveType)
         }
 
@@ -37,10 +38,6 @@ struct RubiksCubeSceneView: UIViewRepresentable {
 
         func gestureHandler(_ handler: GestureHandler, didZoomTo distance: Float) {
             parent.sceneController.setCameraDistance(distance)
-        }
-
-        func gestureHandlerDidTap(_ handler: GestureHandler, at point: CGPoint) {
-            // Can be used for future features like piece selection
         }
     }
 
@@ -62,9 +59,6 @@ struct RubiksCubeSceneView: UIViewRepresentable {
         scnView.preferredFramesPerSecond = 60
         scnView.rendersContinuously = false
 
-        // Debug options (disable for production)
-        // scnView.showsStatistics = true
-
         // Setup gesture handler
         context.coordinator.gestureHandler.scnView = scnView
         context.coordinator.gestureHandler.sceneController = sceneController
@@ -81,15 +75,5 @@ struct RubiksCubeSceneView: UIViewRepresentable {
         // Update coordinator references if needed
         context.coordinator.gestureHandler.cube = cube
         context.coordinator.parent = self
-    }
-}
-
-/// Preview provider
-struct RubiksCubeSceneView_Previews: PreviewProvider {
-    static var previews: some View {
-        RubiksCubeSceneView(
-            cube: RubiksCube(),
-            sceneController: CubeSceneController()
-        )
     }
 }

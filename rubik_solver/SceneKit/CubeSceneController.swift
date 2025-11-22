@@ -119,7 +119,12 @@ class CubeSceneController: ObservableObject {
 
     /// Animates a cube move
     func animateMove(_ moveType: MoveType, completion: @escaping () -> Void) {
-        guard let cube = cube, !isAnimating else {
+        guard let cube = cube else {
+            completion()
+            return
+        }
+
+        guard !isAnimating else {
             completion()
             return
         }
@@ -130,10 +135,16 @@ class CubeSceneController: ObservableObject {
         let affectedCubies = cube.getCubiesForMove(moveType)
         let affectedNodes = affectedCubies.compactMap { $0.node }
 
+        guard !affectedNodes.isEmpty else {
+            isAnimating = false
+            completion()
+            return
+        }
+
         // Create pivot node at center
         let pivotNode = SCNNode()
         pivotNode.name = "pivot"
-        pivotNode.position = SCNVector3.init(0, 0, 0)
+        pivotNode.position = SCNVector3(0, 0, 0)
         cubeRootNode.addChildNode(pivotNode)
 
         // Reparent affected nodes to pivot
@@ -163,26 +174,28 @@ class CubeSceneController: ObservableObject {
 
         // Execute animation
         pivotNode.runAction(rotation) { [weak self] in
-            guard let self = self else { return }
+            DispatchQueue.main.async {
+                guard let self = self else { return }
 
-            // Reparent nodes back to cube root
-            for node in affectedNodes {
-                let worldPos = node.worldPosition
-                let worldTransform = node.worldTransform
-                node.removeFromParentNode()
-                self.cubeRootNode.addChildNode(node)
-                node.worldPosition = worldPos
-                node.transform = self.cubeRootNode.convertTransform(worldTransform, from: nil)
+                // Reparent nodes back to cube root
+                for node in affectedNodes {
+                    let worldPos = node.worldPosition
+                    let worldTransform = node.worldTransform
+                    node.removeFromParentNode()
+                    self.cubeRootNode.addChildNode(node)
+                    node.worldPosition = worldPos
+                    node.transform = self.cubeRootNode.convertTransform(worldTransform, from: nil)
+                }
+
+                // Remove pivot
+                pivotNode.removeFromParentNode()
+
+                // Rebuild to clean up floating point errors
+                self.rebuildCubeMaterials()
+
+                self.isAnimating = false
+                completion()
             }
-
-            // Remove pivot
-            pivotNode.removeFromParentNode()
-
-            // Rebuild to clean up floating point errors
-            self.rebuildCubeMaterials()
-
-            self.isAnimating = false
-            completion()
         }
     }
 

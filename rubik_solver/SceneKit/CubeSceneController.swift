@@ -115,8 +115,8 @@ class CubeSceneController: ObservableObject {
                 )
                 // Update node name to match new position (important for gesture detection)
                 node.name = "cubie_\(cubie.x)_\(cubie.y)_\(cubie.z)"
-                // Reset any accumulated rotation on the node
-                node.rotation = SCNVector4(0, 0, 0, 0)
+                // Reset any accumulated rotation on the node (use valid axis with 0 angle)
+                node.rotation = SCNVector4(0, 1, 0, 0)
             }
         }
     }
@@ -180,6 +180,12 @@ class CubeSceneController: ObservableObject {
         // Execute animation
         pivotNode.runAction(rotation) { [weak self] in
             DispatchQueue.main.async {
+                // Always reset isAnimating, even if self or cube is nil
+                defer {
+                    self?.isAnimating = false
+                    completion()
+                }
+
                 guard let self = self, let cube = self.cube else { return }
 
                 // Reparent nodes back to cube root
@@ -200,9 +206,6 @@ class CubeSceneController: ObservableObject {
 
                 // Rebuild to clean up floating point errors and update node positions/names
                 self.rebuildCubeMaterials()
-
-                self.isAnimating = false
-                completion()
             }
         }
     }

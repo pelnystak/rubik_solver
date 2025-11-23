@@ -45,10 +45,10 @@ class GestureHandler: NSObject, UIGestureRecognizerDelegate {
     /// Pinch tracking
     private var initialPinchDistance: Float = 0
 
-    /// Thresholds
-    private let swipeVelocityThreshold: CGFloat = 300
-    private let swipeDistanceThreshold: CGFloat = 30
-    private let dragThreshold: CGFloat = 10
+    /// Thresholds - lowered for better responsiveness
+    private let swipeVelocityThreshold: CGFloat = 100
+    private let swipeDistanceThreshold: CGFloat = 15
+    private let dragThreshold: CGFloat = 8
 
     override init() {
         super.init()
@@ -254,126 +254,104 @@ class GestureHandler: NSObject, UIGestureRecognizerDelegate {
     private func determineMoveForFrontFace(cubie: Cubie, direction: SwipeDirection) -> MoveType? {
         switch direction {
         case .up:
-            if cubie.x == 0 { return .L }
-            if cubie.x == 2 { return .RPrime }
-            return nil
+            // For center column (x=1), default to L behavior
+            if cubie.x <= 1 { return .L }
+            return .RPrime
         case .down:
-            if cubie.x == 0 { return .LPrime }
-            if cubie.x == 2 { return .R }
-            return nil
+            if cubie.x <= 1 { return .LPrime }
+            return .R
         case .left:
-            if cubie.y == 0 { return .D }
-            if cubie.y == 2 { return .UPrime }
-            return nil
+            // For center row (y=1), default to D behavior
+            if cubie.y <= 1 { return .D }
+            return .UPrime
         case .right:
-            if cubie.y == 0 { return .DPrime }
-            if cubie.y == 2 { return .U }
-            return nil
+            if cubie.y <= 1 { return .DPrime }
+            return .U
         }
     }
 
     private func determineMoveForBackFace(cubie: Cubie, direction: SwipeDirection) -> MoveType? {
         switch direction {
         case .up:
-            if cubie.x == 0 { return .LPrime }
-            if cubie.x == 2 { return .R }
-            return nil
+            if cubie.x <= 1 { return .LPrime }
+            return .R
         case .down:
-            if cubie.x == 0 { return .L }
-            if cubie.x == 2 { return .RPrime }
-            return nil
+            if cubie.x <= 1 { return .L }
+            return .RPrime
         case .left:
-            if cubie.y == 0 { return .DPrime }
-            if cubie.y == 2 { return .U }
-            return nil
+            if cubie.y <= 1 { return .DPrime }
+            return .U
         case .right:
-            if cubie.y == 0 { return .D }
-            if cubie.y == 2 { return .UPrime }
-            return nil
+            if cubie.y <= 1 { return .D }
+            return .UPrime
         }
     }
 
     private func determineMoveForUpFace(cubie: Cubie, direction: SwipeDirection) -> MoveType? {
         switch direction {
         case .up:
-            if cubie.z == 0 { return .B }
-            if cubie.z == 2 { return .FPrime }
-            return nil
+            if cubie.z <= 1 { return .B }
+            return .FPrime
         case .down:
-            if cubie.z == 0 { return .BPrime }
-            if cubie.z == 2 { return .F }
-            return nil
+            if cubie.z <= 1 { return .BPrime }
+            return .F
         case .left:
-            if cubie.x == 0 { return .L }
-            if cubie.x == 2 { return .RPrime }
-            return nil
+            if cubie.x <= 1 { return .L }
+            return .RPrime
         case .right:
-            if cubie.x == 0 { return .LPrime }
-            if cubie.x == 2 { return .R }
-            return nil
+            if cubie.x <= 1 { return .LPrime }
+            return .R
         }
     }
 
     private func determineMoveForDownFace(cubie: Cubie, direction: SwipeDirection) -> MoveType? {
         switch direction {
         case .up:
-            if cubie.z == 0 { return .BPrime }
-            if cubie.z == 2 { return .F }
-            return nil
+            if cubie.z <= 1 { return .BPrime }
+            return .F
         case .down:
-            if cubie.z == 0 { return .B }
-            if cubie.z == 2 { return .FPrime }
-            return nil
+            if cubie.z <= 1 { return .B }
+            return .FPrime
         case .left:
-            if cubie.x == 0 { return .LPrime }
-            if cubie.x == 2 { return .R }
-            return nil
+            if cubie.x <= 1 { return .LPrime }
+            return .R
         case .right:
-            if cubie.x == 0 { return .L }
-            if cubie.x == 2 { return .RPrime }
-            return nil
+            if cubie.x <= 1 { return .L }
+            return .RPrime
         }
     }
 
     private func determineMoveForRightFace(cubie: Cubie, direction: SwipeDirection) -> MoveType? {
         switch direction {
         case .up:
-            if cubie.z == 0 { return .BPrime }
-            if cubie.z == 2 { return .F }
-            return nil
+            if cubie.z <= 1 { return .BPrime }
+            return .F
         case .down:
-            if cubie.z == 0 { return .B }
-            if cubie.z == 2 { return .FPrime }
-            return nil
+            if cubie.z <= 1 { return .B }
+            return .FPrime
         case .left:
-            if cubie.y == 0 { return .D }
-            if cubie.y == 2 { return .UPrime }
-            return nil
+            if cubie.y <= 1 { return .D }
+            return .UPrime
         case .right:
-            if cubie.y == 0 { return .DPrime }
-            if cubie.y == 2 { return .U }
-            return nil
+            if cubie.y <= 1 { return .DPrime }
+            return .U
         }
     }
 
     private func determineMoveForLeftFace(cubie: Cubie, direction: SwipeDirection) -> MoveType? {
         switch direction {
         case .up:
-            if cubie.z == 0 { return .B }
-            if cubie.z == 2 { return .FPrime }
-            return nil
+            if cubie.z <= 1 { return .B }
+            return .FPrime
         case .down:
-            if cubie.z == 0 { return .BPrime }
-            if cubie.z == 2 { return .F }
-            return nil
+            if cubie.z <= 1 { return .BPrime }
+            return .F
         case .left:
-            if cubie.y == 0 { return .DPrime }
-            if cubie.y == 2 { return .U }
-            return nil
+            if cubie.y <= 1 { return .DPrime }
+            return .U
         case .right:
-            if cubie.y == 0 { return .D }
-            if cubie.y == 2 { return .UPrime }
-            return nil
+            if cubie.y <= 1 { return .D }
+            return .UPrime
         }
     }
 
